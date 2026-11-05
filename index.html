@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JUNGU · 摄影作品集</title>
+
+  <!-- Google Fonts：Great Vibes（LOGO 花体）+ Noto Serif SC（正文衬线） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Noto+Serif+SC:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- 顶部固定导航：左时钟 / 中 LOGO / 右视图切换 -->
+  <header class="nav">
+    <div class="nav-left">
+      <span class="clock" id="clock">--:--:--</span>
+    </div>
+    <div class="nav-center">
+      <a class="logo" href="#" aria-label="JUNGU">JUNGU</a>
+    </div>
+    <nav class="nav-right" role="tablist" aria-label="视图切换">
+      <button class="switch-btn active" id="btnGeo" role="tab" aria-selected="true">空间</button>
+      <button class="switch-btn" id="btnTime" role="tab" aria-selected="false">时间</button>
+      <button class="switch-btn" id="btnEquip" role="tab" aria-selected="false">器材</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ===================== 视图一：地理 ===================== -->
+    <section class="view view-geo active" id="viewGeo">
+
+      <div class="geo-layout">
+        <!-- 左：城市列表 -->
+        <aside class="city-list-wrap">
+          <p class="side-label">
+            <span class="side-label-en">DESTINATIONS</span>
+            <span class="side-label-cn">到访城市</span>
+          </p>
+          <ul class="city-list" id="cityList"><!-- 由 JS 注入 --></ul>
+        </aside>
+
+        <!-- 中：高德地图（城市级行政边界高亮） -->
+        <div class="map-wrap" id="mapWrap">
+          <!-- 手机端：城市列表抽屉入口 -->
+          <button class="menu-btn" id="menuBtn" aria-label="打开城市列表">☰</button>
+          <div id="amapContainer"></div>
+          <div class="map-controls">
+            <button class="map-ctrl" id="zoomIn" aria-label="放大">+</button>
+            <button class="map-ctrl" id="zoomOut" aria-label="缩小">−</button>
+          </div>
+          <button class="map-reset" id="resetBtn">复位</button>
+        </div>
+
+        <!-- 右：城市照片面板（手机端为底部 bottom sheet） -->
+        <aside class="city-panel" id="cityPanel">
+          <!-- 手机端 bottom sheet：把手 + 关闭按钮（桌面隐藏） -->
+          <div class="sheet-handle" id="sheetHandle" aria-hidden="true"><span></span></div>
+          <button class="panel-close" id="panelCloseBtn" aria-label="关闭面板">✕</button>
+          <div class="city-panel-head">
+            <h2 class="city-title" id="cityTitle"></h2>
+            <p class="city-count" id="cityCount"></p>
+          </div>
+          <p class="panel-empty" id="panelEmpty">从左侧列表或地图上选择一座城市，查看当地作品</p>
+          <div class="city-grid" id="cityGrid"><!-- 照片网格由 JS 注入 --></div>
+          <button class="back-btn" id="deselectBtn">收起面板</button>
+        </aside>
+      </div>
+
+      <!-- 手机端抽屉遮罩（桌面隐藏） -->
+      <div class="drawer-mask" id="drawerMask"></div>
+
+      <!-- 底部统计 -->
+      <p class="geo-stats" id="geoStats"></p>
+    </section>
+
+    <!-- ===================== 视图二：时间 ===================== -->
+    <section class="view view-time" id="viewTime">
+
+      <!-- 背景音乐（循环播放；切到空间视图不中断） -->
+      <audio id="bgm" src="assets/travel-meaning.mp3" loop preload="metadata"></audio>
+
+      <!-- 年份导航 + 音乐控件（控件通过 order 固定在最右侧） -->
+      <div class="film-years" id="filmYears">
+        <div class="music-ctrl" id="musicCtrl">
+          <button class="music-btn" id="musicBtn" aria-label="播放 / 暂停 旅行的意义">
+            <span class="music-note">♪</span>
+          </button>
+          <div class="music-meta">
+            <p class="music-title">旅行的意义</p>
+            <p class="music-artist">陈绮贞</p>
+          </div>
+        </div>
+        <!-- 年份按钮由 JS 注入（appendChild 在控件之后，order 保证控件仍居右） -->
+      </div>
+
+      <!-- 胶片长卷 -->
+      <div class="film-scroll" id="filmScroll">
+        <div class="film-track" id="filmTrack"><!-- 年份段落由 JS 注入 --></div>
+      </div>
+
+      <p class="film-hint">← 拖动胶片左右浏览 · 点击画格全屏放大 →</p>
+
+      <!-- 歌词（完整列表 · 滚轮滚动 · 点击跳转） -->
+      <div class="lyrics" id="lyrics">
+        <p class="lyrics-hint" id="lyricsHint">点击右上角 ♪ 播放《旅行的意义》</p>
+        <div class="lyrics-box" id="lyricsBox" hidden>
+          <div class="lyrics-list" id="lyricList"><!-- 由 JS 注入 --></div>
+        </div>
+      </div>
+
+      <!-- 滚动进度条 -->
+      <div class="film-progress"><div class="film-progress-bar" id="filmProgress"></div></div>
+    </section>
+
+    <!-- ===================== 视图三：器材 ===================== -->
+    <section class="view view-equip" id="viewEquip">
+      <div class="equip-scroll">
+        <header class="equip-head">
+          <h1 class="equip-title">Equipment</h1>
+          <p class="equip-sub">我的器材</p>
+        </header>
+
+        <h2 class="equip-group-title">— 机身 BODIES</h2>
+        <div class="equip-row" id="equipBodies"><!-- 卡片由 JS 渲染 --></div>
+
+        <h2 class="equip-group-title">— 镜头 LENSES</h2>
+        <div class="equip-row" id="equipLenses"><!-- 卡片由 JS 渲染 --></div>
+
+        <p class="equip-stats" id="equipStats"></p>
+      </div>
+    </section>
+  </main>
+
+  <!-- 全屏灯箱（深色画廊：左右箭头 + 滚轮/键盘翻页 + 右上角关闭） -->
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <button class="lightbox-nav lightbox-prev" id="lightboxPrev" aria-label="上一张">‹</button>
+    <button class="lightbox-nav lightbox-next" id="lightboxNext" aria-label="下一张">›</button>
+    <button class="lightbox-close" id="lightboxClose" aria-label="关闭全屏">✕</button>
+    <figure class="lightbox-inner">
+      <img id="lightboxImg" src="" alt="" />
+      <figcaption id="lightboxCap"></figcaption>
+      <span class="lightbox-page" id="lightboxPage"></span>
+    </figure>
+  </div>
+
+  <!-- 高德地图 JS API v2：安全密钥必须在 API 脚本之前声明 -->
+  <script>window._AMapSecurityConfig = { securityJsCode: '1b8043b04e67e34392560e330ec8b8d4' };</script>
+  <script src="https://webapi.amap.com/maps?v=2.0&key=906aa4509a440c22e2d461602eaf0079&plugin=AMap.DistrictLayer,AMap.Scale,AMap.ToolBar"></script>
+
+  <script src="js/photos.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
